@@ -1,0 +1,8 @@
+### Test fetching data
+GET http://localhost:3000/reports
+
+### Simulate Webhook
+POST http://localhost:3000/reports/webhook
+Content-Type: application/json
+
+{ "event": "sheet_updated" }
