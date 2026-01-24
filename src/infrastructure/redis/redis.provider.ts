@@ -8,18 +8,23 @@ export const RedisProvider: Provider = {
   useFactory: () => {
     const logger = new Logger('RedisProvider:ioredis');
     const host = process.env.REDIS_HOST ?? 'localhost';
-    const port = parseInt(process.env.REDIS_PORT ?? '6379');
+    const port = parseInt(process.env.REDIS_PORT ?? '6379', 10);
     const password = process.env.REDIS_PASSWORD;
+    const url = process.env.REDIS_URL;
 
-    const redis = new Redis({
-      host,
-      port,
-      password,
-      retryStrategy: (times) => {
-        // Retry every 2 seconds
-        return Math.min(times * 50, 2000);
-      },
-    });
+    // Create a Redis instance, prioritizing the URL. If not available, fall back to Host/Port.
+    const redis = url
+      ? new Redis(url, {
+          // Options for URL-based connection
+          retryStrategy: (times) => Math.min(times * 50, 2000),
+        })
+      : new Redis({
+          // Options for Host/Port-based connection
+          host,
+          port,
+          password,
+          retryStrategy: (times) => Math.min(times * 50, 2000),
+        });
 
     redis.on('error', (err) => {
       logger.error(`Redis Connection Error: ${err.message}`);
