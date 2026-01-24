@@ -14,9 +14,15 @@ import { ReportType } from '../../domain/entities/report.entity';
 export class ReportController {
   constructor(private readonly reportService: ReportService) {}
 
+  // GET /reports
+  @Get()
+  async getAll() {
+    return await this.reportService.getAllReportData();
+  }
+
   // GET /reports/all?type=revenue
   @Get('all')
-  async getAll(@Query('type') type: ReportType) {
+  async getType(@Query('type') type: ReportType) {
     return await this.reportService.getAllYearsReport(type);
   }
 

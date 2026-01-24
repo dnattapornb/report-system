@@ -1,3 +1,6 @@
+### Fetching all data
+GET http://localhost:3000/reports
+
 ### Fetching all data with type ['revenue', 'hotels']
 GET http://localhost:3000/reports/all?type=revenue
 

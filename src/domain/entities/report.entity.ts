@@ -1,16 +1,13 @@
-export type ReportType = 'revenue' | 'hotels';
+// Define all available report types as a constant
+export const REPORT_TYPES = ['revenue', 'hotels'] as const;
 
-export interface MonthlyData {
-  month: string;
-  value: number;
-}
+// Automatically derive Type from REPORT_TYPES values
+export type ReportType = (typeof REPORT_TYPES)[number];
 
-export interface GlobalReportResponse {
-  type: ReportType;
-  years: {
-    [year: string]: { [month: string]: number };
-  };
-}
+// Structure: { [type]: { [year]: { [month]: value } } }
+export type MonthlyReport = Record<string, number>;
+export type YearlyReport = Record<string, MonthlyReport>;
+export type AllReportData = Record<string, YearlyReport>;
 
 export class ReportDomain {
   // Transform raw data from Google Sheets with explicit year and month

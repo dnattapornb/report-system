@@ -2,7 +2,13 @@ import { Injectable, Logger } from '@nestjs/common';
 import { GoogleSheetsService } from '../../infrastructure/google/google-sheets.service';
 import { RedisService } from '../../infrastructure/redis/redis.service';
 import { ReportGateway } from './report.gateway';
-import { ReportDomain, ReportType } from '../../domain/entities/report.entity';
+import {
+  REPORT_TYPES,
+  MonthlyReport,
+  AllReportData,
+  ReportType,
+  ReportDomain,
+} from '../../domain/entities/report.entity';
 
 @Injectable()
 export class ReportService {
@@ -17,6 +23,27 @@ export class ReportService {
     private readonly redis: RedisService,
     private readonly gateway: ReportGateway,
   ) {}
+
+  /**
+   * Get all data in the system (Types -> Years -> Months)
+   */
+  async getAllReportData(): Promise<AllReportData> {
+    const types = await this.redis.smembers('report:types');
+    const result: AllReportData = {};
+
+    for (const type of types) {
+      result[type] = {};
+
+      const years = await this.redis.smembers(`report:${type}:years`);
+
+      for (const year of years.sort()) {
+        const monthlyData = await this.redis.hgetall(`report:${type}:${year}`);
+        result[type][year] = this.formatFullYear(monthlyData);
+      }
+    }
+
+    return result;
+  }
 
   /**
    * Fetch all available years for a specific type
@@ -82,22 +109,32 @@ export class ReportService {
     console.log('--- Debug reports ---');
     console.table(reports.slice(0, 15));
 
+    for (const type of REPORT_TYPES) {
+      // Store Master Index for types
+      await this.redis.sadd('report:types', type);
+    }
+
     for (const item of reports) {
-      const revKey = `report:revenue:${item.year}`;
-      const hotelKey = `report:hotels:${item.year}`;
+      // "2024", "2025", ...
+      const yearStr = item.year;
+      // "01", "02", ...
+      const monthStr = item.month;
+
+      const revenueKey = `report:revenue:${yearStr}`;
+      const hotelsKey = `report:hotels:${yearStr}`;
 
       // Store monthly data
-      await this.redis.hset(revKey, item.month, item.revenue.toString());
-      await this.redis.hset(hotelKey, item.month, item.hotels.toString());
+      await this.redis.hset(revenueKey, monthStr, item.revenue.toString());
+      await this.redis.hset(hotelsKey, monthStr, item.hotels.toString());
 
-      // Update Index Set (Stores which years have data)
-      await this.redis.sadd(`report:revenue:years`, item.year);
-      await this.redis.sadd(`report:hotels:years`, item.year);
+      // Store Year Index
+      await this.redis.sadd(`report:revenue:years`, yearStr);
+      await this.redis.sadd(`report:hotels:years`, yearStr);
     }
   }
 
-  private formatFullYear(data: Record<string, string>) {
-    const result = {};
+  private formatFullYear(data: Record<string, string>): MonthlyReport {
+    const result: Record<string, number> = {};
     for (let i = 1; i <= 12; i++) {
       const m = i.toString().padStart(2, '0');
       result[m] = parseFloat(data[m] || '0');
