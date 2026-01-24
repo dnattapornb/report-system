@@ -114,9 +114,9 @@ export class ReportService {
     const reports = ReportDomain.transformRawToReports(rawRows);
 
     // Inspect reports before Redis sync
-    // View first 20 rows in table
-    console.log('--- Debug reports ---');
-    console.table(reports.slice(0, 20));
+    // View first 15 rows in table
+    // console.log('--- Debug reports ---');
+    // console.table(reports.slice(0, 15));
 
     for (const type of REPORT_TYPES) {
       // Store Master Index for types
