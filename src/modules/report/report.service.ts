@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { GoogleSheetsService } from '../../infrastructure/google/google-sheets.service';
 import { RedisService } from '../../infrastructure/redis/redis.service';
 import { ReportGateway } from './report.gateway';
-import { ReportDomain, ReportItem } from '../../domain/entities/report.entity';
+import { ReportDomain, ReportType } from '../../domain/entities/report.entity';
 
 @Injectable()
 export class ReportService {
@@ -10,7 +10,7 @@ export class ReportService {
   private readonly cacheKey = 'REPORT_PRIMARY_DATA';
   private readonly spreadsheetId =
     '1dm58io1Hk0iRKu7rTcYimmQ5LZHZJF5YulN0lQ1jlcY';
-  private readonly range = 'CM-HOTEL!B:I';
+  private readonly range = 'REPORT!A:D';
 
   constructor(
     private readonly googleSheets: GoogleSheetsService,
@@ -19,43 +19,89 @@ export class ReportService {
   ) {}
 
   /**
-   * Get main report data (Using Redis as primary storage)
+   * Fetch all available years for a specific type
    */
-  async getReportData(): Promise<ReportItem[]> {
-    try {
-      const cached = await this.redis.get(this.cacheKey);
+  async getAllYearsReport(type: ReportType) {
+    const yearsKey = `report:${type}:years`;
+    // Get year list from Set
+    const availableYears = await this.redis.smembers(yearsKey);
 
-      if (cached) {
-        this.logger.log('Fetching from Redis');
-        return JSON.parse(cached);
-      }
-
-      return await this.syncAndCacheData();
-    } catch (error) {
-      this.logger.error(`Can't fetch data: ${error.message}`);
-      throw error;
+    const globalData = {};
+    for (const year of availableYears.sort()) {
+      const yearKey = `report:${type}:${year}`;
+      const monthlyData = await this.redis.hgetall(yearKey);
+      globalData[year] = this.formatFullYear(monthlyData);
     }
+
+    return { type, years: globalData };
   }
 
   /**
-   * Force sync new data from Google Sheets (Internal Logic)
+   * Fetch data for a specific year (12 months)
    */
-  async syncAndCacheData(): Promise<ReportItem[]> {
-    this.logger.log('Starting data sync from Google Sheets...');
+  async getAnnualReport(type: ReportType, year: string) {
+    const key = `report:${type}:${year}`;
+    const data = await this.redis.hgetall(key);
+    return this.formatFullYear(data);
+  }
 
-    const rawRows = await this.googleSheets.getSheetValues(
+  /**
+   * Fetch data by month period
+   */
+  async getPeriodReport(
+    type: ReportType,
+    year: string,
+    start: number,
+    end: number,
+  ) {
+    const key = `report:${type}:${year}`;
+    const fields = Array.from({ length: end - start + 1 }, (_, i) =>
+      (start + i).toString().padStart(2, '0'),
+    );
+    const values = await this.redis.hmget(key, fields);
+
+    return fields.reduce((acc, month, index) => {
+      acc[month] = parseFloat(values[index] || '0');
+      return acc;
+    }, {});
+  }
+
+  /**
+   * Sync data and update the Index Set
+   */
+  async syncFromSheets() {
+    const raw = await this.googleSheets.getSheetValues(
       this.spreadsheetId,
       this.range,
     );
 
-    const entities = ReportDomain.transformRawToEntity(rawRows);
+    const reports = ReportDomain.transformRawToReports(raw);
 
-    // (TTL 1 hour)
-    await this.redis.set(this.cacheKey, JSON.stringify(entities), 3600);
+    // Inspect reports before Redis sync
+    // View first 15 rows in table
+    console.log('--- Debug reports ---');
+    console.table(reports.slice(0, 15));
 
-    // UI WebSocket
-    this.gateway.broadcastReportUpdate(entities);
+    for (const item of reports) {
+      const revKey = `report:revenue:${item.year}`;
+      const hotelKey = `report:hotels:${item.year}`;
 
-    return entities;
+      // Store monthly data
+      await this.redis.hset(revKey, item.month, item.revenue.toString());
+      await this.redis.hset(hotelKey, item.month, item.hotels.toString());
+
+      // Update Index Set (Stores which years have data)
+      await this.redis.sadd(`report:revenue:years`, item.year);
+      await this.redis.sadd(`report:hotels:years`, item.year);
+    }
+  }
+
+  private formatFullYear(data: Record<string, string>) {
+    const result = {};
+    for (let i = 1; i <= 12; i++) {
+      const m = i.toString().padStart(2, '0');
+      result[m] = parseFloat(data[m] || '0');
+    }
+    return result;
   }
 }

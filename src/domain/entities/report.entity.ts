@@ -1,26 +1,44 @@
-export interface ReportItem {
-  id: string;
-  category: string;
-  amount: number;
-  date: string;
-  status: 'active' | 'pending' | 'completed';
+export type ReportType = 'revenue' | 'hotels';
+
+export interface MonthlyData {
+  month: string;
+  value: number;
 }
 
-/**
- * Class for handling report data transformation logic
- */
+export interface GlobalReportResponse {
+  type: ReportType;
+  years: {
+    [year: string]: { [month: string]: number };
+  };
+}
+
 export class ReportDomain {
-  static transformRawToEntity(rows: any[][]): ReportItem[] {
+  // Transform raw data from Google Sheets with explicit year and month
+  static transformRawToReports(rows: any[][]) {
     if (!rows || rows.length < 2) return [];
+    const [, ...data] = rows;
 
-    const [headers, ...data] = rows;
+    return data
+      .map((row, index) => {
+        // Check if date exists
+        if (!row[0]) return null;
 
-    return data.map((row) => ({
-      id: String(row[0] ?? ''),
-      category: String(row[1] ?? 'General'),
-      amount: parseFloat(row[2]) || 0,
-      date: String(row[3] ?? ''),
-      status: (row[4] as ReportItem['status']) || 'pending',
-    }));
+        const dateStr = String(row[0]);
+        const date = new Date(dateStr);
+
+        // Validate if Date is valid
+        if (isNaN(date.getTime())) {
+          console.warn(`[Row ${index + 2}] Invalid Date format: ${dateStr}`);
+          return null;
+        }
+
+        return {
+          year: date.getFullYear().toString(),
+          month: (date.getMonth() + 1).toString().padStart(2, '0'),
+          revenue: parseFloat(String(row[1]).replace(/,/g, '')) || 0, // Handle commas
+          hotels: parseInt(String(row[2])) || 0,
+        };
+      })
+      .filter((item) => item !== null);
   }
 }
