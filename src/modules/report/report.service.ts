@@ -115,8 +115,8 @@ export class ReportService {
 
     // Inspect reports before Redis sync
     // View first 20 rows in table
-    // console.log('--- Debug reports ---');
-    // console.table(reports.slice(0, 20));
+    console.log('--- Debug reports ---');
+    console.table(reports.slice(0, 20));
 
     for (const type of REPORT_TYPES) {
       // Store Master Index for types
@@ -139,6 +139,8 @@ export class ReportService {
       // Store Year Index
       await this.redis.sadd(`report:revenue:years`, yearStr);
       await this.redis.sadd(`report:hotels:years`, yearStr);
+
+      this.gateway.broadcastReportUpdate(await this.getAllReportData());
     }
   }
 
