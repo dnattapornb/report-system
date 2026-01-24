@@ -8,7 +8,7 @@ import { ReportModule } from './modules/report/report.module';
 @Global()
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
     ReportModule, // Import newly created ReportModule
   ],
   providers: [RedisProvider, RedisService, GoogleSheetsService],
