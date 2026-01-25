@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server } from 'socket.io';
 
@@ -10,10 +11,14 @@ const allowedOrigin = process.env.WEBSOCKET_ORIGIN || 'http://localhost:5173';
   },
 })
 export class ReportGateway {
+  private readonly logger = new Logger(ReportGateway.name);
   @WebSocketServer()
   server: Server;
 
   broadcastReportUpdate(data: any) {
+    this.logger.log(
+      '[Broadcast] Real-time signal report updated via WebSocket',
+    );
     this.server.emit('update:report', data);
   }
 }

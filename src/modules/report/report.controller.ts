@@ -1,62 +1,52 @@
 import {
   Controller,
   Get,
-  Query,
   Post,
   Body,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
 import { ReportService } from './report.service';
-import { ReportType } from '../../domain/entities/report.entity';
 
 @Controller('reports')
 export class ReportController {
-  constructor(private readonly reportService: ReportService) {}
+  private readonly spreadsheetId: string;
+  private readonly range: string;
+
+  constructor(private readonly reportService: ReportService) {
+    const spreadsheetIdFromEnv = process.env.GOOGLE_SPREADSHEET_ID;
+    const rangeFromEnv = process.env.GOOGLE_SPREADSHEET_RANGE;
+
+    if (!spreadsheetIdFromEnv || !rangeFromEnv) {
+      throw new Error(
+        'Missing required environment variables: GOOGLE_SPREADSHEET_ID or GOOGLE_SPREADSHEET_RANGE',
+      );
+    }
+
+    this.spreadsheetId = spreadsheetIdFromEnv;
+    this.range = rangeFromEnv;
+  }
 
   // GET /reports
   @Get()
   async getAll() {
-    return await this.reportService.getAllReportData();
-  }
-
-  // GET /reports/all?type=revenue
-  @Get('all')
-  async getType(@Query('type') type: ReportType) {
-    return await this.reportService.getAllYearsReport(type);
-  }
-
-  // GET /reports/annual?type=revenue&year=2025
-  @Get('annual')
-  async getAnnual(
-    @Query('type') type: ReportType,
-    @Query('year') year: string,
-  ) {
-    return await this.reportService.getAnnualReport(type, year);
-  }
-
-  // GET /reports/period?type=revenue&year=2025&start=1&end=5
-  @Get('period')
-  async getPeriod(
-    @Query('type') type: ReportType,
-    @Query('year') year: string,
-    @Query('start') start: string,
-    @Query('end') end: string,
-  ) {
-    return await this.reportService.getPeriodReport(type, year, +start, +end);
+    return await this.reportService.getAllReportData(
+      this.spreadsheetId,
+      this.range,
+    );
   }
 
   // Post /reports/sync
   @Post('sync')
   @HttpCode(HttpStatus.OK)
   async sync() {
-    return this.reportService.syncFromSheets();
+    return this.reportService.syncFromSheets(this.spreadsheetId, this.range);
   }
 
   @Post('webhook')
   @HttpCode(HttpStatus.OK)
   async handleWebhook(@Body() payload: any) {
-    await this.reportService.syncFromSheets();
+    await this.reportService.syncFromSheets(this.spreadsheetId, this.range);
     return {
       success: true,
       message: 'Data synced and UI notified',

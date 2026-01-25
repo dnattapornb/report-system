@@ -3,19 +3,14 @@ import { GoogleSheetsService } from '../../infrastructure/google/google-sheets.s
 import { RedisService } from '../../infrastructure/redis/redis.service';
 import { ReportGateway } from './report.gateway';
 import {
-  REPORT_TYPES,
   MonthlyReport,
   AllReportData,
-  ReportType,
   ReportDomain,
 } from '../../domain/entities/report.entity';
 
 @Injectable()
 export class ReportService {
   private readonly logger = new Logger(ReportService.name);
-  private readonly spreadsheetId =
-    '1dm58io1Hk0iRKu7rTcYimmQ5LZHZJF5YulN0lQ1jlcY';
-  private readonly range = 'REPORT!A:D';
 
   constructor(
     private readonly googleSheets: GoogleSheetsService,
@@ -23,139 +18,125 @@ export class ReportService {
     private readonly gateway: ReportGateway,
   ) {}
 
-  /**
-   * Get all data in the system (Types -> Years -> Months)
-   */
-  async getAllReportData(): Promise<AllReportData> {
-    await this.checkAndSyncData();
+  async getAllReportData(
+    spreadsheetId: string,
+    range: string,
+  ): Promise<AllReportData> {
+    const years = (await this.redis.smembers('report:years')).sort();
+    const categories = await this.redis.smembers('report:categories');
+    const displayNames = await this.redis.hgetall('report:ota_display_names');
 
-    const types = await this.redis.smembers('report:types');
-    const result: AllReportData = {};
+    const result: AllReportData = {
+      years,
+      categories,
+      types: {},
+      displayNames,
+      data: {},
+    };
 
-    for (const type of types) {
-      result[type] = {};
+    for (const category of categories) {
+      result.data[category] = {};
 
-      const years = await this.redis.smembers(`report:${type}:years`);
+      const types = await this.redis.smembers(`report:types:${category}`);
+      result.types[category] = types;
 
-      for (const year of years.sort()) {
-        const monthlyData = await this.redis.hgetall(`report:${type}:${year}`);
-        result[type][year] = this.formatFullYear(monthlyData);
+      for (const type of types) {
+        result.data[category][type] = {};
+
+        for (const year of years) {
+          const key = `report:data:${category}:${type}:${year}`;
+          const rawMonthly = await this.redis.hgetall(key);
+
+          result.data[category][type][year] = this.formatFullYear(rawMonthly);
+        }
       }
     }
 
     return result;
   }
 
-  /**
-   * Fetch all available years for a specific type
-   */
-  async getAllYearsReport(type: ReportType) {
-    await this.checkAndSyncData();
-
-    const yearsKey = `report:${type}:years`;
-    // Get year list from Set
-    const availableYears = await this.redis.smembers(yearsKey);
-
-    const globalData = {};
-    for (const year of availableYears.sort()) {
-      const yearKey = `report:${type}:${year}`;
-      const monthlyData = await this.redis.hgetall(yearKey);
-      globalData[year] = this.formatFullYear(monthlyData);
-    }
-
-    return { type, years: globalData };
-  }
-
-  /**
-   * Fetch data for a specific year (12 months)
-   */
-  async getAnnualReport(type: ReportType, year: string) {
-    await this.checkAndSyncData();
-
-    const key = `report:${type}:${year}`;
-    const data = await this.redis.hgetall(key);
-    return this.formatFullYear(data);
-  }
-
-  /**
-   * Fetch data by month period
-   */
-  async getPeriodReport(
-    type: ReportType,
-    year: string,
-    start: number,
-    end: number,
-  ) {
-    await this.checkAndSyncData();
-
-    const key = `report:${type}:${year}`;
-    const fields = Array.from({ length: end - start + 1 }, (_, i) =>
-      (start + i).toString().padStart(2, '0'),
-    );
-    const values = await this.redis.hmget(key, fields);
-
-    return fields.reduce((acc, month, index) => {
-      acc[month] = parseFloat(values[index] || '0');
-      return acc;
-    }, {});
-  }
-
-  /**
-   * Sync data and update the Index Set
-   */
-  async syncFromSheets() {
+  async syncFromSheets(spreadsheetId: string, range: string) {
     this.logger.log('Starting data sync from Google Sheets...');
 
-    const rawRows = await this.googleSheets.getSheetValues(
-      this.spreadsheetId,
-      this.range,
-    );
+    const raw = await this.googleSheets.getSheetValues(spreadsheetId, range);
 
-    const reports = ReportDomain.transformRawToReports(rawRows);
+    const stats = ReportDomain.transformRawToStats(raw);
 
-    // Inspect reports before Redis sync
+    // Inspect stats before Redis sync
     // View first 15 rows in table
-    // console.log('--- Debug reports ---');
-    // console.table(reports.slice(0, 15));
+    // console.log('--- Debug stats ---');
+    // console.table(stats.slice(0, 15));
 
-    for (const type of REPORT_TYPES) {
-      // Store Master Index for types
-      await this.redis.sadd('report:types', type);
+    for (const item of stats) {
+      const { year, month } = item;
+
+      await this.redis.sadd('report:years', year);
+      await this.redis.sadd('report:categories', 'revenue', 'hotels', 'otas');
+      await this.redis.sadd('report:types:revenue', 'total');
+      await this.redis.sadd('report:types:hotels', 'total', 'new', 'canceled');
+
+      await this.redis.hset(
+        `report:data:revenue:total:${year}`,
+        month,
+        item.revenue.toString(),
+      );
+
+      await this.redis.hset(
+        `report:data:hotels:total:${year}`,
+        month,
+        item.hotelTotal.toString(),
+      );
+      await this.redis.hset(
+        `report:data:hotels:new:${year}`,
+        month,
+        item.hotelNew.toString(),
+      );
+      await this.redis.hset(
+        `report:data:hotels:canceled:${year}`,
+        month,
+        item.hotelCanceled.toString(),
+      );
+
+      for (const [originalName, value] of Object.entries(item.otas)) {
+        const sanitizedKey = ReportDomain.sanitizeKey(originalName);
+
+        await this.redis.hset(
+          'report:ota_display_names',
+          sanitizedKey,
+          originalName,
+        );
+
+        await this.redis.sadd('report:types:otas', sanitizedKey);
+
+        await this.redis.hset(
+          `report:data:otas:${sanitizedKey}:${year}`,
+          month,
+          value.toString(),
+        );
+      }
     }
 
-    for (const item of reports) {
-      // "2024", "2025", ...
-      const yearStr = item.year;
-      // "01", "02", ...
-      const monthStr = item.month;
-
-      const revenueKey = `report:revenue:${yearStr}`;
-      const hotelsKey = `report:hotels:${yearStr}`;
-
-      // Store monthly data
-      await this.redis.hset(revenueKey, monthStr, item.revenue.toString());
-      await this.redis.hset(hotelsKey, monthStr, item.hotels.toString());
-
-      // Store Year Index
-      await this.redis.sadd(`report:revenue:years`, yearStr);
-      await this.redis.sadd(`report:hotels:years`, yearStr);
-
-      this.gateway.broadcastReportUpdate(await this.getAllReportData());
-    }
+    // Broadcast Real-time signal with new Data to UI
+    const allData = await this.getAllReportData(spreadsheetId, range);
+    this.gateway.broadcastReportUpdate(allData);
+    return allData;
   }
 
-  private async checkAndSyncData(): Promise<void> {
+  private async checkAndSyncData(
+    spreadsheetId: string,
+    range: string,
+  ): Promise<void> {
     const types = await this.redis.smembers('report:types');
     if (types.length === 0) {
       this.logger.log(
         'Cache is empty. Triggering data sync from Google Sheets...',
       );
-      await this.syncFromSheets();
+      await this.syncFromSheets(spreadsheetId, range);
     }
   }
 
   private formatFullYear(data: Record<string, string>): MonthlyReport {
-    const result: Record<string, number> = {};
+    const result: MonthlyReport = {};
     for (let i = 1; i <= 12; i++) {
       const m = i.toString().padStart(2, '0');
       result[m] = parseFloat(data[m] || '0');

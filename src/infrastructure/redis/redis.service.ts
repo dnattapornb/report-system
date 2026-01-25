@@ -18,8 +18,8 @@ export class RedisService {
     await this.redis.del(key);
   }
 
-  async sadd(key: string, value: string): Promise<void> {
-    await this.redis.sadd(key, value);
+  async sadd(key: string, ...members: string[]): Promise<void> {
+    await this.redis.sadd(key, ...members);
   }
 
   async smembers(key: string): Promise<string[]> {
