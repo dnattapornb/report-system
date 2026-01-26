@@ -5,8 +5,8 @@ import { ReportGateway } from './report.gateway';
 import {
   MonthlyReport,
   AllReportData,
-  ReportDomain,
 } from '../../domain/entities/report.entity';
+import { ReportDomain } from '../../domain/report.domain.service';
 
 @Injectable()
 export class ReportService {
@@ -59,8 +59,10 @@ export class ReportService {
     this.logger.log('Starting data sync from Google Sheets...');
 
     const raw = await this.googleSheets.getSheetValues(spreadsheetId, range);
+    // return raw;
 
     const stats = ReportDomain.transformRawToStats(raw);
+    return stats;
 
     // Inspect stats before Redis sync
     // View first 15 rows in table
