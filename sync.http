@@ -1,15 +1,6 @@
 ### Fetching all data
 GET http://localhost:3000/reports
 
-### Fetching all data with type ['revenue', 'hotels']
-GET http://localhost:3000/reports/all?type=revenue
-
-### Fetching annual data by year with type ['revenue', 'hotels']
-GET http://localhost:3000/reports/annual?type=revenue&year=2025
-
-### Fetching period data by year, month ['start', 'end'] with type ['revenue', 'hotels']
-GET http://localhost:3000//reports/period?type=revenue&year=2025&start=1&end=5
-
 ### Sync data from Spreatheets
 POST http://localhost:3000/reports/sync
 

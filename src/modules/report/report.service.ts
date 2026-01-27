@@ -1,10 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { GoogleSheetsService } from '../../infrastructure/google/google-sheets.service';
 import { RedisService } from '../../infrastructure/redis/redis.service';
 import { ReportGateway } from './report.gateway';
 import {
   MonthlyReport,
-  AllReportData,
+  SaaSMetricItem,
+  SaaSMetricsData,
 } from '../../domain/entities/report.entity';
 import { ReportDomain } from '../../domain/report.domain.service';
 
@@ -16,123 +18,88 @@ export class ReportService {
     private readonly googleSheets: GoogleSheetsService,
     private readonly redis: RedisService,
     private readonly gateway: ReportGateway,
+    private readonly configService: ConfigService,
   ) {}
 
-  async getAllReportData(
+  async getAllSaaSMetrics(
     spreadsheetId: string,
     range: string,
-  ): Promise<AllReportData> {
-    const years = (await this.redis.smembers('report:years')).sort();
-    const categories = await this.redis.smembers('report:categories');
-    const displayNames = await this.redis.hgetall('report:ota_display_names');
+  ): Promise<SaaSMetricsData> {
+    const result: SaaSMetricsData = {};
+    const years = await this.redis.smembers('saas:metrics:years');
 
-    const result: AllReportData = {
-      years,
-      categories,
-      types: {},
-      displayNames,
-      data: {},
-    };
+    years.sort();
 
-    for (const category of categories) {
-      result.data[category] = {};
+    for (const year of years) {
+      result[year] = {};
+      const months = await this.redis.smembers(`saas:metrics:months:${year}`);
 
-      const types = await this.redis.smembers(`report:types:${category}`);
-      result.types[category] = types;
+      months.sort();
 
-      for (const type of types) {
-        result.data[category][type] = {};
+      for (const month of months) {
+        const redisKey = `saas:metrics:${year}:${month}`;
+        const data = await this.redis.hgetall(redisKey);
 
-        for (const year of years) {
-          const key = `report:data:${category}:${type}:${year}`;
-          const rawMonthly = await this.redis.hgetall(key);
-
-          result.data[category][type][year] = this.formatFullYear(rawMonthly);
+        const formattedData: any = {};
+        for (const key in data) {
+          formattedData[key] = parseFloat(data[key]);
         }
+        result[year][month] = formattedData as SaaSMetricItem;
       }
     }
 
     return result;
   }
 
-  async syncFromSheets(spreadsheetId: string, range: string) {
-    this.logger.log('Starting data sync from Google Sheets...');
-
-    const raw = await this.googleSheets.getSheetValues(spreadsheetId, range);
-
-    const stats = ReportDomain.transformRawToStats(raw);
-
-    // Inspect stats before Redis sync
-    // View first 15 rows in table
-    // console.log('--- Debug stats ---');
-    // console.table(stats.slice(0, 15));
-
-    for (const item of stats) {
-      const { year, month } = item;
-
-      await this.redis.sadd('report:years', year);
-      await this.redis.sadd('report:categories', 'revenue', 'hotels', 'otas');
-      await this.redis.sadd('report:types:revenue', 'total');
-      await this.redis.sadd('report:types:hotels', 'total', 'new', 'canceled');
-
-      await this.redis.hset(
-        `report:data:revenue:total:${year}`,
-        month,
-        item.revenue.toString(),
-      );
-
-      await this.redis.hset(
-        `report:data:hotels:total:${year}`,
-        month,
-        item.hotelTotal.toString(),
-      );
-      await this.redis.hset(
-        `report:data:hotels:new:${year}`,
-        month,
-        item.hotelNew.toString(),
-      );
-      await this.redis.hset(
-        `report:data:hotels:canceled:${year}`,
-        month,
-        item.hotelCanceled.toString(),
-      );
-
-      for (const [originalName, value] of Object.entries(item.otas)) {
-        const sanitizedKey = ReportDomain.sanitizeKey(originalName);
-
-        await this.redis.hset(
-          'report:ota_display_names',
-          sanitizedKey,
-          originalName,
-        );
-
-        await this.redis.sadd('report:types:otas', sanitizedKey);
-
-        await this.redis.hset(
-          `report:data:otas:${sanitizedKey}:${year}`,
-          month,
-          value.toString(),
-        );
-      }
-    }
-
-    // Broadcast Real-time signal with new Data to UI
-    const allData = await this.getAllReportData(spreadsheetId, range);
-    this.gateway.broadcastReportUpdate(allData);
-    return allData;
-  }
-
-  private async checkAndSyncData(
+  async syncSaaSMetricsFromSheet(
     spreadsheetId: string,
     range: string,
   ): Promise<void> {
-    const types = await this.redis.smembers('report:types');
-    if (types.length === 0) {
-      this.logger.log(
-        'Cache is empty. Triggering data sync from Google Sheets...',
-      );
-      await this.syncFromSheets(spreadsheetId, range);
+    this.logger.log('Starting SaaS Metrics sync from Google Sheets...');
+
+    const cutoffDate = this.configService.get<string>(
+      'GOOGLE_SPREADSHEET_DATA_SYNC_CUTOFF_DATE',
+    );
+    if (cutoffDate) {
+      this.logger.log(`Applying data cutoff date: ${cutoffDate}`);
     }
+
+    const rawRows = await this.googleSheets.getSheetValues(
+      spreadsheetId,
+      range,
+    );
+
+    const metrics = ReportDomain.transformRawToSaaSMetrics(
+      rawRows,
+      cutoffDate || null,
+    );
+
+    // Inspect metrics before Redis sync
+    // View first 15 rows in table
+    // console.log('--- Debug metrics ---');
+    // console.table(metrics.slice(0, 15));
+
+    const pipeline = this.redis.pipeline();
+
+    for (const item of metrics) {
+      const { year, month, ...data } = item;
+      const redisKey = `saas:metrics:${year}:${month}`;
+
+      pipeline.sadd('saas:metrics:years', year);
+      pipeline.sadd(`saas:metrics:months:${year}`, month);
+
+      // object to [key, value, key, value, ...] for pipeline(batch)
+      const hashData = Object.entries(data).flat().map(String);
+      pipeline.hset(redisKey, ...hashData);
+    }
+
+    await pipeline.exec();
+    this.logger.log(
+      `SaaS Metrics sync completed. ${metrics.length} months processed.`,
+    );
+
+    // [Optional] Broadcast to clients that new SaaS data is available
+    // this.gateway.broadcastSaaSUpdate(await this.getAllSaaSMetrics());
   }
 
   private formatFullYear(data: Record<string, string>): MonthlyReport {

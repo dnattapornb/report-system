@@ -1,5 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common';
-import Redis from 'ioredis';
+import Redis, { Pipeline } from 'ioredis';
 import { REDIS_CLIENT } from './redis.provider';
 
 @Injectable()
@@ -36,5 +36,9 @@ export class RedisService {
 
   async hmget(key: string, fields: string[]): Promise<(string | null)[]> {
     return await this.redis.hmget(key, ...fields);
+  }
+
+  pipeline(): Pipeline {
+    return <Pipeline>this.redis.pipeline();
   }
 }

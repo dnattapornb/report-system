@@ -30,7 +30,7 @@ export class ReportController {
   // GET /reports
   @Get()
   async getAll() {
-    return await this.reportService.getAllReportData(
+    return await this.reportService.getAllSaaSMetrics(
       this.spreadsheetId,
       this.range,
     );
@@ -40,13 +40,19 @@ export class ReportController {
   @Post('sync')
   @HttpCode(HttpStatus.OK)
   async sync() {
-    return this.reportService.syncFromSheets(this.spreadsheetId, this.range);
+    return this.reportService.syncSaaSMetricsFromSheet(
+      this.spreadsheetId,
+      this.range,
+    );
   }
 
   @Post('webhook')
   @HttpCode(HttpStatus.OK)
   async handleWebhook(@Body() payload: any) {
-    await this.reportService.syncFromSheets(this.spreadsheetId, this.range);
+    await this.reportService.syncSaaSMetricsFromSheet(
+      this.spreadsheetId,
+      this.range,
+    );
     return {
       success: true,
       message: 'Data synced and UI notified',

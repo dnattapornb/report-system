@@ -1,13 +1,4 @@
 export type MonthlyReport = Record<string, number>;
-export type YearlyReport = Record<string, MonthlyReport>;
-
-export interface AllReportData {
-  years: string[];
-  categories: string[];
-  types: Record<string, string[]>;
-  displayNames: Record<string, string>;
-  data: Record<string, Record<string, YearlyReport>>;
-}
 
 export interface StatsItem {
   year: string;
@@ -18,3 +9,22 @@ export interface StatsItem {
   revenue: number;
   otas: Record<string, number>;
 }
+
+export interface SaaSMetricItem {
+  year: string;
+  month: string;
+  mrr: number;
+  expansion: number;
+  churnAmount: number;
+  contraction: number;
+  nrrPercent: number;
+  grrPercent: number;
+  churnRatePercent: number;
+  actualProfit: number;
+  targetProfit: number;
+  newClientsOrganic: number;
+  newClientsBusinessPartner: number;
+  totalRevenue: number;
+}
+
+export type SaaSMetricsData = Record<string, Record<string, SaaSMetricItem>>;
