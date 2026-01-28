@@ -1,39 +1,6 @@
-import { StatsItem, SaaSMetricItem } from './entities/report.entity';
+import { SaaSMetricItem } from './entities/report.entity';
 
 export class ReportDomain {
-  static transformRawToStats(rows: any[][]): StatsItem[] {
-    if (!rows || rows.length < 2) return [];
-
-    const headers = rows[0].map((h) => String(h).trim());
-    const dataRows = rows.slice(1);
-
-    return dataRows
-      .map((row) => {
-        if (!row[0]) return null;
-        const date = new Date(row[0]);
-
-        const item: StatsItem = {
-          year: date.getFullYear().toString(),
-          month: (date.getMonth() + 1).toString().padStart(2, '0'),
-          hotelTotal: parseInt(row[1]) || 0,
-          hotelNew: parseInt(row[2]) || 0,
-          hotelCanceled: parseInt(row[3]) || 0,
-          revenue: parseFloat(String(row[4]).replace(/,/g, '')) || 0,
-          otas: {},
-        };
-
-        // Extract OTA name from Header as Key, Index start at row 5
-        for (let i = 5; i < headers.length; i++) {
-          const otaName = headers[i];
-          item.otas[otaName] =
-            parseFloat(String(row[i]).replace(/,/g, '')) || 0;
-        }
-
-        return item;
-      })
-      .filter(Boolean) as StatsItem[];
-  }
-
   static transformRawToSaaSMetrics(
     rows: any[][],
     cutoffDate: string | null,

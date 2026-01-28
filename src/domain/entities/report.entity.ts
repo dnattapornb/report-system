@@ -1,15 +1,5 @@
 export type MonthlyReport = Record<string, number>;
 
-export interface StatsItem {
-  year: string;
-  month: string;
-  hotelTotal: number;
-  hotelNew: number;
-  hotelCanceled: number;
-  revenue: number;
-  otas: Record<string, number>;
-}
-
 export interface SaaSMetricItem {
   year: string;
   month: string;
