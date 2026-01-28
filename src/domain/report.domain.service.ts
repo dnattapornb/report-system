@@ -21,13 +21,25 @@ export class ReportDomain {
       churnRatePercent: headers.indexOf('Churn rate %'),
       actualProfit: headers.indexOf('Profits'),
       targetProfit: headers.indexOf('Target Profit'),
+      totalRevenue: headers.indexOf('Total Revenue'),
       newClientsOrganic: headers.indexOf(
         'New Organic Sales Clients Acquired  / Month',
       ),
       newClientsBusinessPartner: headers.indexOf(
         'New No. of Hotel by Business Partner Clients Acquired  / Month',
       ),
-      totalRevenue: headers.indexOf('Total Revenue'),
+      clientsDropOut: headers.indexOf(
+        'Total Hotel by Organic Sales and Business Partner Drop Out / Month',
+      ),
+      clientsFreeTrial: headers.indexOf('Live Free trial'),
+      clientsPendingSetup: headers.indexOf(
+        'Pending Setup (waiting for online)',
+      ),
+      actualHotels: headers.indexOf(
+        'Total Hotel by Organic Sales and Business Partner',
+      ),
+      targetHotels: headers.indexOf('Set All Target'),
+      totalSalesRep: headers.indexOf('No. of Sales Rep'),
     };
 
     // Helper function for safe parsing
@@ -42,7 +54,8 @@ export class ReportDomain {
         if (!monthStr) return null;
 
         const [monthName, yearStr] = monthStr.split('-');
-        const monthNum = new Date(Date.parse(monthName + ' 1, 2012')).getMonth() + 1;
+        const dateNameStr = Date.parse(monthName + ' 1, 2012');
+        const monthNum = new Date(dateNameStr).getMonth() + 1;
         const monthPadded = monthNum.toString().padStart(2, '0');
 
         const itemDateStr = `${yearStr}-${monthPadded}`;
@@ -64,13 +77,23 @@ export class ReportDomain {
           ),
           actualProfit: parseFloatOrZero(row[columnIndexMap.actualProfit]),
           targetProfit: parseFloatOrZero(row[columnIndexMap.targetProfit]),
+          totalRevenue: parseFloatOrZero(row[columnIndexMap.totalRevenue]),
           newClientsOrganic: parseIntOrZero(
             row[columnIndexMap.newClientsOrganic],
           ),
           newClientsBusinessPartner: parseIntOrZero(
             row[columnIndexMap.newClientsBusinessPartner],
           ),
-          totalRevenue: parseFloatOrZero(row[columnIndexMap.totalRevenue]),
+          clientsDropOut: parseIntOrZero(row[columnIndexMap.clientsDropOut]),
+          clientsFreeTrial: parseIntOrZero(
+            row[columnIndexMap.clientsFreeTrial],
+          ),
+          clientsPendingSetup: parseIntOrZero(
+            row[columnIndexMap.clientsPendingSetup],
+          ),
+          actualHotels: parseIntOrZero(row[columnIndexMap.actualHotels]),
+          targetHotels: parseIntOrZero(row[columnIndexMap.targetHotels]),
+          totalSalesRep: parseIntOrZero(row[columnIndexMap.totalSalesRep]),
         };
       })
       .filter(Boolean) as SaaSMetricItem[];

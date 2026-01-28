@@ -12,9 +12,15 @@ export interface SaaSMetricItem {
   churnRatePercent: number;
   actualProfit: number;
   targetProfit: number;
+  totalRevenue: number;
   newClientsOrganic: number;
   newClientsBusinessPartner: number;
-  totalRevenue: number;
+  clientsDropOut: number;
+  clientsFreeTrial: number;
+  clientsPendingSetup: number;
+  actualHotels: number;
+  targetHotels: number;
+  totalSalesRep: number;
 }
 
 export type SaaSMetricsData = Record<string, Record<string, SaaSMetricItem>>;
