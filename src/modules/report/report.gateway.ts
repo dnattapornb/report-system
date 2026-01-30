@@ -15,10 +15,10 @@ export class ReportGateway {
   @WebSocketServer()
   server: Server;
 
-  broadcastReportUpdate(data: any) {
+  broadcastSaaSMetricsUpdate(data: any) {
     this.logger.log(
-      '[Broadcast] Real-time signal report updated via WebSocket',
+      '[Broadcast] Real-time signal report saas metrics via WebSocket',
     );
-    this.server.emit('update:report', data);
+    this.server.emit('update:saas:metrics', data);
   }
 }

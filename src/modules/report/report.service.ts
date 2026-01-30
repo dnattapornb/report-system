@@ -98,16 +98,9 @@ export class ReportService {
       `SaaS Metrics sync completed. ${metrics.length} months processed.`,
     );
 
-    // [Optional] Broadcast to clients that new SaaS data is available
-    // this.gateway.broadcastSaaSUpdate(await this.getAllSaaSMetrics());
-  }
-
-  private formatFullYear(data: Record<string, string>): MonthlyReport {
-    const result: MonthlyReport = {};
-    for (let i = 1; i <= 12; i++) {
-      const m = i.toString().padStart(2, '0');
-      result[m] = parseFloat(data[m] || '0');
-    }
-    return result;
+    // Broadcast to clients that new SaaS data is available --> update:saas:metrics
+    this.gateway.broadcastSaaSMetricsUpdate(
+      await this.getAllSaaSMetrics(spreadsheetId, range),
+    );
   }
 }
