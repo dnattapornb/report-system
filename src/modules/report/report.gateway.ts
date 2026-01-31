@@ -69,7 +69,7 @@ export class ReportGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   private broadcastOnlineUsers() {
     const users = Array.from(this.onlineUsers.values());
-    this.server.emit('update:online:users', {
+    this.server.emit('update:online-users', {
       count: users.length,
       users: users,
     });
@@ -79,6 +79,6 @@ export class ReportGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.logger.log(
       '[Broadcast] Real-time signal report saas metrics via WebSocket',
     );
-    this.server.emit('update:saas:metrics', data);
+    this.server.emit('update:saas-metrics', data);
   }
 }

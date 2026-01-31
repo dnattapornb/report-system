@@ -98,7 +98,7 @@ export class ReportService {
       `SaaS Metrics sync completed. ${metrics.length} months processed.`,
     );
 
-    // Broadcast to clients that new SaaS data is available --> update:saas:metrics
+    // Broadcast to clients that new SaaS data is available --> update:saas-metrics
     this.gateway.broadcastSaaSMetricsUpdate(
       await this.getAllSaaSMetrics(spreadsheetId, range),
     );
