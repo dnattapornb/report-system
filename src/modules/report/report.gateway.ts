@@ -6,7 +6,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { UAParser } from 'ua-parser-js'; // ✨ แก้ไขการ import
+import { UAParser } from 'ua-parser-js';
 
 const allowedOrigin = process.env.WEBSOCKET_ORIGIN || 'http://localhost:5173';
 
@@ -41,7 +41,7 @@ export class ReportGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const userAgent = headers['user-agent'] || '';
 
     // Parse User Agent
-    const parser = new UAParser(userAgent); // ✨ การเรียกใช้เหมือนเดิม แต่ตอนนี้ถูกต้องแล้ว
+    const parser = new UAParser(userAgent);
     const result = parser.getResult();
 
     const user: OnlineUser = {
