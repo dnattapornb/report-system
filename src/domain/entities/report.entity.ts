@@ -17,11 +17,11 @@ export interface SaaSMetricItem {
   clientsPendingSetup: number;
   targetHotels: number;
   actualHotels: number;
-  targetProfit: number;
-  actualProfit: number;
+  totalSalesRep: number;
   totalTargetRevenue: number;
   totalActualRevenue: number;
-  totalSalesRep: number;
+  targetProfit: number;
+  actualProfit: number;
 }
 
 export type SaaSMetricsData = Record<string, Record<string, SaaSMetricItem>>;

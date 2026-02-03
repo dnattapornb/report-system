@@ -36,11 +36,11 @@ export class ReportDomain {
       actualHotels: headers.indexOf(
         'Total Hotel by Organic Sales and Business Partner',
       ),
-      targetProfit: headers.indexOf('Target Profit'),
-      actualProfit: headers.indexOf('Profits'),
+      totalSalesRep: headers.indexOf('No. of Sales Rep'),
       totalTargetRevenue: headers.indexOf('Total Target Revenue'),
       totalActualRevenue: headers.indexOf('Total Revenue'),
-      totalSalesRep: headers.indexOf('No. of Sales Rep'),
+      targetProfit: headers.indexOf('Target Profit'),
+      actualProfit: headers.indexOf('Profits'),
     };
 
     // Helper function for safe parsing
