@@ -13,34 +13,37 @@ export class ReportDomain {
     const columnIndexMap = {
       month: headers.indexOf('Month'),
       mrr: headers.indexOf('Monthly Recurring Revenue (MRR)'),
-      expansion: headers.indexOf('Expansion (Upgrade)'),
+      expansionAmount: headers.indexOf('Expansion (Upgrade)'),
       churnAmount: headers.indexOf('Chrun Rate Amount'),
-      contraction: headers.indexOf('Contractions (Downgrade)'),
+      contractionAmount: headers.indexOf('Contractions (Downgrade)'),
       nrrPercent: headers.indexOf('NRR%'),
       grrPercent: headers.indexOf('GRR %'),
       churnRatePercent: headers.indexOf('Churn rate %'),
-      newClientsOrganic: headers.indexOf(
+      clientNewOrganicCount: headers.indexOf(
         'New Organic Sales Clients Acquired  / Month',
       ),
-      newClientsBusinessPartner: headers.indexOf(
+      clientNewPartnerCount: headers.indexOf(
         'New No. of Hotel by Business Partner Clients Acquired  / Month',
       ),
-      clientsDropOut: headers.indexOf(
+      clientChurnCount: headers.indexOf(
         'Total Hotel by Organic Sales and Business Partner Drop Out / Month',
       ),
-      clientsFreeTrial: headers.indexOf('Live Free trial'),
-      clientsPendingSetup: headers.indexOf(
+      clientFreeTrialCount: headers.indexOf('Live Free trial'),
+      clientPendingSetupCount: headers.indexOf(
         'Pending Setup (waiting for online)',
       ),
-      targetHotels: headers.indexOf('Set All Target'),
-      actualHotels: headers.indexOf(
+      hotelTarget: headers.indexOf('Set All Target'),
+      hotelActual: headers.indexOf(
         'Total Hotel by Organic Sales and Business Partner',
       ),
-      totalSalesRep: headers.indexOf('No. of Sales Rep'),
+      salesRepCount: headers.indexOf('No. of Sales Rep'),
       revenueTarget: headers.indexOf('Total Target Revenue'),
       revenueActual: headers.indexOf('Total Revenue'),
-      targetProfit: headers.indexOf('Target Profit'),
-      actualProfit: headers.indexOf('Profits'),
+      cmpayChargeTarget: headers.indexOf('Forecast Target Total Charge'),
+      cmpayChargeActual: headers.indexOf('Total Charge'),
+      cmpayProfitTarget: headers.indexOf('Target Profit'),
+      cmpayProfitActual: headers.indexOf('Profits'),
+      cmpayActiveUserCount: headers.indexOf('CM Pay Active User'),
     };
 
     // Helper function for safe parsing
@@ -68,38 +71,47 @@ export class ReportDomain {
           year: yearStr,
           month: monthNum.toString().padStart(2, '0'),
           mrr: parseFloatOrZero(row[columnIndexMap.mrr]),
-          expansion: parseFloatOrZero(row[columnIndexMap.expansion]),
+          expansionAmount: parseFloatOrZero(row[columnIndexMap.expansionAmount]),
           churnAmount: parseFloatOrZero(row[columnIndexMap.churnAmount]),
-          contraction: parseFloatOrZero(row[columnIndexMap.contraction]),
+          contractionAmount: parseFloatOrZero(row[columnIndexMap.contractionAmount]),
           nrrPercent: parseFloatOrZero(row[columnIndexMap.nrrPercent]),
           grrPercent: parseFloatOrZero(row[columnIndexMap.grrPercent]),
           churnRatePercent: parseFloatOrZero(
             row[columnIndexMap.churnRatePercent],
           ),
-          newClientsOrganic: parseIntOrZero(
-            row[columnIndexMap.newClientsOrganic],
+          clientNewOrganicCount: parseIntOrZero(
+            row[columnIndexMap.clientNewOrganicCount],
           ),
-          newClientsBusinessPartner: parseIntOrZero(
-            row[columnIndexMap.newClientsBusinessPartner],
+          clientNewPartnerCount: parseIntOrZero(
+            row[columnIndexMap.clientNewPartnerCount],
           ),
-          clientsDropOut: parseIntOrZero(row[columnIndexMap.clientsDropOut]),
-          clientsFreeTrial: parseIntOrZero(
-            row[columnIndexMap.clientsFreeTrial],
+          clientChurnCount: parseIntOrZero(row[columnIndexMap.clientChurnCount]),
+          clientFreeTrialCount: parseIntOrZero(
+            row[columnIndexMap.clientFreeTrialCount],
           ),
-          clientsPendingSetup: parseIntOrZero(
-            row[columnIndexMap.clientsPendingSetup],
+          clientPendingSetupCount: parseIntOrZero(
+            row[columnIndexMap.clientPendingSetupCount],
           ),
-          targetHotels: parseIntOrZero(row[columnIndexMap.targetHotels]),
-          actualHotels: parseIntOrZero(row[columnIndexMap.actualHotels]),
-          targetProfit: parseFloatOrZero(row[columnIndexMap.targetProfit]),
-          actualProfit: parseFloatOrZero(row[columnIndexMap.actualProfit]),
-          revenueTarget: parseFloatOrZero(
-            row[columnIndexMap.revenueTarget],
+          hotelTarget: parseIntOrZero(row[columnIndexMap.hotelTarget]),
+          hotelActual: parseIntOrZero(row[columnIndexMap.hotelActual]),
+          salesRepCount: parseIntOrZero(row[columnIndexMap.salesRepCount]),
+          revenueTarget: parseFloatOrZero(row[columnIndexMap.revenueTarget]),
+          revenueActual: parseFloatOrZero(row[columnIndexMap.revenueActual]),
+          cmpayChargeTarget: parseFloatOrZero(
+            row[columnIndexMap.cmpayChargeTarget],
           ),
-          revenueActual: parseFloatOrZero(
-            row[columnIndexMap.revenueActual],
+          cmpayChargeActual: parseFloatOrZero(
+            row[columnIndexMap.cmpayChargeActual],
           ),
-          totalSalesRep: parseIntOrZero(row[columnIndexMap.totalSalesRep]),
+          cmpayProfitTarget: parseFloatOrZero(
+            row[columnIndexMap.cmpayProfitTarget],
+          ),
+          cmpayProfitActual: parseFloatOrZero(
+            row[columnIndexMap.cmpayProfitActual],
+          ),
+          cmpayActiveUserCount: parseFloatOrZero(
+            row[columnIndexMap.cmpayActiveUserCount],
+          ),
         };
       })
       .filter(Boolean) as SaaSMetricItem[];
