@@ -38,8 +38,8 @@ export class ReportDomain {
       ),
       targetProfit: headers.indexOf('Target Profit'),
       actualProfit: headers.indexOf('Profits'),
-      targetTotalRevenue: headers.indexOf('Total Target Revenue'),
-      actualTotalRevenue: headers.indexOf('Total Revenue'),
+      totalTargetRevenue: headers.indexOf('Total Target Revenue'),
+      totalActualRevenue: headers.indexOf('Total Revenue'),
       totalSalesRep: headers.indexOf('No. of Sales Rep'),
     };
 
@@ -93,11 +93,11 @@ export class ReportDomain {
           actualHotels: parseIntOrZero(row[columnIndexMap.actualHotels]),
           targetProfit: parseFloatOrZero(row[columnIndexMap.targetProfit]),
           actualProfit: parseFloatOrZero(row[columnIndexMap.actualProfit]),
-          targetTotalRevenue: parseFloatOrZero(
-            row[columnIndexMap.targetTotalRevenue],
+          totalTargetRevenue: parseFloatOrZero(
+            row[columnIndexMap.totalTargetRevenue],
           ),
-          actualTotalRevenue: parseFloatOrZero(
-            row[columnIndexMap.actualTotalRevenue],
+          totalActualRevenue: parseFloatOrZero(
+            row[columnIndexMap.totalActualRevenue],
           ),
           totalSalesRep: parseIntOrZero(row[columnIndexMap.totalSalesRep]),
         };

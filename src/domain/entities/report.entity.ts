@@ -19,8 +19,8 @@ export interface SaaSMetricItem {
   actualHotels: number;
   targetProfit: number;
   actualProfit: number;
-  targetTotalRevenue: number;
-  actualTotalRevenue: number;
+  totalTargetRevenue: number;
+  totalActualRevenue: number;
   totalSalesRep: number;
 }
 
