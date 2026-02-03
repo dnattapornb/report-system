@@ -21,10 +21,7 @@ export class ReportService {
     private readonly configService: ConfigService,
   ) {}
 
-  async getAllSaaSMetrics(
-    spreadsheetId: string,
-    range: string,
-  ): Promise<SaaSMetricsData> {
+  async getAllSaaSMetrics(spreadsheetId: string, range: string) {
     const result: SaaSMetricsData = {};
     const years = await this.redis.smembers('saas:metrics:years');
 

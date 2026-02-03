@@ -19,9 +19,6 @@ export class ReportDomain {
       nrrPercent: headers.indexOf('NRR%'),
       grrPercent: headers.indexOf('GRR %'),
       churnRatePercent: headers.indexOf('Churn rate %'),
-      actualProfit: headers.indexOf('Profits'),
-      targetProfit: headers.indexOf('Target Profit'),
-      totalRevenue: headers.indexOf('Total Revenue'),
       newClientsOrganic: headers.indexOf(
         'New Organic Sales Clients Acquired  / Month',
       ),
@@ -35,10 +32,14 @@ export class ReportDomain {
       clientsPendingSetup: headers.indexOf(
         'Pending Setup (waiting for online)',
       ),
+      targetHotels: headers.indexOf('Set All Target'),
       actualHotels: headers.indexOf(
         'Total Hotel by Organic Sales and Business Partner',
       ),
-      targetHotels: headers.indexOf('Set All Target'),
+      targetProfit: headers.indexOf('Target Profit'),
+      actualProfit: headers.indexOf('Profits'),
+      targetTotalRevenue: headers.indexOf('Total Target Revenue'),
+      actualTotalRevenue: headers.indexOf('Total Revenue'),
       totalSalesRep: headers.indexOf('No. of Sales Rep'),
     };
 
@@ -75,9 +76,6 @@ export class ReportDomain {
           churnRatePercent: parseFloatOrZero(
             row[columnIndexMap.churnRatePercent],
           ),
-          actualProfit: parseFloatOrZero(row[columnIndexMap.actualProfit]),
-          targetProfit: parseFloatOrZero(row[columnIndexMap.targetProfit]),
-          totalRevenue: parseFloatOrZero(row[columnIndexMap.totalRevenue]),
           newClientsOrganic: parseIntOrZero(
             row[columnIndexMap.newClientsOrganic],
           ),
@@ -91,21 +89,19 @@ export class ReportDomain {
           clientsPendingSetup: parseIntOrZero(
             row[columnIndexMap.clientsPendingSetup],
           ),
-          actualHotels: parseIntOrZero(row[columnIndexMap.actualHotels]),
           targetHotels: parseIntOrZero(row[columnIndexMap.targetHotels]),
+          actualHotels: parseIntOrZero(row[columnIndexMap.actualHotels]),
+          targetProfit: parseFloatOrZero(row[columnIndexMap.targetProfit]),
+          actualProfit: parseFloatOrZero(row[columnIndexMap.actualProfit]),
+          targetTotalRevenue: parseFloatOrZero(
+            row[columnIndexMap.targetTotalRevenue],
+          ),
+          actualTotalRevenue: parseFloatOrZero(
+            row[columnIndexMap.actualTotalRevenue],
+          ),
           totalSalesRep: parseIntOrZero(row[columnIndexMap.totalSalesRep]),
         };
       })
       .filter(Boolean) as SaaSMetricItem[];
-  }
-
-  static sanitizeKey(rawName: string): string {
-    return rawName
-      .toLowerCase()
-      .trim()
-      .replace(/&/g, 'and')
-      .replace(/[^a-z0-9]/g, '_')
-      .replace(/_{2,}/g, '_')
-      .replace(/^_+|_+$/g, '');
   }
 }

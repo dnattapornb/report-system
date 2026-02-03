@@ -40,10 +40,11 @@ export class ReportController {
   @Post('sync')
   @HttpCode(HttpStatus.OK)
   async sync() {
-    return this.reportService.syncSaaSMetricsFromSheet(
+    const data = await this.reportService.syncSaaSMetricsFromSheet(
       this.spreadsheetId,
       this.range,
     );
+    return data;
   }
 
   @Post('webhook')

@@ -10,16 +10,17 @@ export interface SaaSMetricItem {
   nrrPercent: number;
   grrPercent: number;
   churnRatePercent: number;
-  actualProfit: number;
-  targetProfit: number;
-  totalRevenue: number;
   newClientsOrganic: number;
   newClientsBusinessPartner: number;
   clientsDropOut: number;
   clientsFreeTrial: number;
   clientsPendingSetup: number;
-  actualHotels: number;
   targetHotels: number;
+  actualHotels: number;
+  targetProfit: number;
+  actualProfit: number;
+  targetTotalRevenue: number;
+  actualTotalRevenue: number;
   totalSalesRep: number;
 }
 
