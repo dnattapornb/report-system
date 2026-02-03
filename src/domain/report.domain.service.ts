@@ -37,8 +37,8 @@ export class ReportDomain {
         'Total Hotel by Organic Sales and Business Partner',
       ),
       totalSalesRep: headers.indexOf('No. of Sales Rep'),
-      totalTargetRevenue: headers.indexOf('Total Target Revenue'),
-      totalActualRevenue: headers.indexOf('Total Revenue'),
+      revenueTarget: headers.indexOf('Total Target Revenue'),
+      revenueActual: headers.indexOf('Total Revenue'),
       targetProfit: headers.indexOf('Target Profit'),
       actualProfit: headers.indexOf('Profits'),
     };
@@ -93,11 +93,11 @@ export class ReportDomain {
           actualHotels: parseIntOrZero(row[columnIndexMap.actualHotels]),
           targetProfit: parseFloatOrZero(row[columnIndexMap.targetProfit]),
           actualProfit: parseFloatOrZero(row[columnIndexMap.actualProfit]),
-          totalTargetRevenue: parseFloatOrZero(
-            row[columnIndexMap.totalTargetRevenue],
+          revenueTarget: parseFloatOrZero(
+            row[columnIndexMap.revenueTarget],
           ),
-          totalActualRevenue: parseFloatOrZero(
-            row[columnIndexMap.totalActualRevenue],
+          revenueActual: parseFloatOrZero(
+            row[columnIndexMap.revenueActual],
           ),
           totalSalesRep: parseIntOrZero(row[columnIndexMap.totalSalesRep]),
         };
