@@ -25,6 +25,9 @@ export interface SaaSMetricItem {
   cmpayProfitTarget: number;
   cmpayProfitActual: number;
   cmpayActiveUserCount: number;
+  hotelgruCommissionTarget: number;
+  hotelgruCommissionActual: number;
+  hotelgruHotelCount: number;
 }
 
 export type SaaSMetricsData = Record<string, Record<string, SaaSMetricItem>>;

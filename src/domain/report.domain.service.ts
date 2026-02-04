@@ -44,6 +44,13 @@ export class ReportDomain {
       cmpayProfitTarget: headers.indexOf('Target Profit'),
       cmpayProfitActual: headers.indexOf('Profits'),
       cmpayActiveUserCount: headers.indexOf('CM Pay Active User'),
+      hotelgruCommissionTarget: headers.indexOf(
+        'Total commission Forecast  IBE+HotelGru',
+      ),
+      hotelgruCommissionActual: headers.indexOf(
+        'Total Actual commission IBE+HotelGru per month',
+      ),
+      hotelgruHotelCount: headers.indexOf('No. of Hotel (All Product)'),
     };
 
     // Helper function for safe parsing
@@ -71,9 +78,13 @@ export class ReportDomain {
           year: yearStr,
           month: monthNum.toString().padStart(2, '0'),
           mrr: parseFloatOrZero(row[columnIndexMap.mrr]),
-          expansionAmount: parseFloatOrZero(row[columnIndexMap.expansionAmount]),
+          expansionAmount: parseFloatOrZero(
+            row[columnIndexMap.expansionAmount],
+          ),
           churnAmount: parseFloatOrZero(row[columnIndexMap.churnAmount]),
-          contractionAmount: parseFloatOrZero(row[columnIndexMap.contractionAmount]),
+          contractionAmount: parseFloatOrZero(
+            row[columnIndexMap.contractionAmount],
+          ),
           nrrPercent: parseFloatOrZero(row[columnIndexMap.nrrPercent]),
           grrPercent: parseFloatOrZero(row[columnIndexMap.grrPercent]),
           churnRatePercent: parseFloatOrZero(
@@ -85,7 +96,9 @@ export class ReportDomain {
           clientNewPartnerCount: parseIntOrZero(
             row[columnIndexMap.clientNewPartnerCount],
           ),
-          clientChurnCount: parseIntOrZero(row[columnIndexMap.clientChurnCount]),
+          clientChurnCount: parseIntOrZero(
+            row[columnIndexMap.clientChurnCount],
+          ),
           clientFreeTrialCount: parseIntOrZero(
             row[columnIndexMap.clientFreeTrialCount],
           ),
@@ -111,6 +124,15 @@ export class ReportDomain {
           ),
           cmpayActiveUserCount: parseFloatOrZero(
             row[columnIndexMap.cmpayActiveUserCount],
+          ),
+          hotelgruCommissionTarget: parseFloatOrZero(
+            row[columnIndexMap.hotelgruCommissionTarget],
+          ),
+          hotelgruCommissionActual: parseFloatOrZero(
+            row[columnIndexMap.hotelgruCommissionActual],
+          ),
+          hotelgruHotelCount: parseFloatOrZero(
+            row[columnIndexMap.hotelgruHotelCount],
           ),
         };
       })
