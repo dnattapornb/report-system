@@ -7,53 +7,106 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ReportService } from './report.service';
+import { ReportGateway } from './report.gateway';
 
 @Controller('reports')
 export class ReportController {
   private readonly spreadsheetId: string;
-  private readonly range: string;
+  private readonly spreadsheetReportMetricsRange: string;
+  private readonly spreadsheetReportBreakdownRange: string;
 
-  constructor(private readonly reportService: ReportService) {
+  constructor(
+    private readonly reportService: ReportService,
+    private readonly gateway: ReportGateway,
+  ) {
     const spreadsheetIdFromEnv = process.env.GOOGLE_SPREADSHEET_ID;
-    const rangeFromEnv = process.env.GOOGLE_SPREADSHEET_RANGE;
+    const spreadsheetReportMetricsRangeFromEnv =
+      process.env.GOOGLE_SPREADSHEET_REPORT_METRICS_RANGE;
+    const spreadsheetReportBreakdownRangeFromEnv =
+      process.env.GOOGLE_SPREADSHEET_REPORT_BREAKDOWN_RANGE;
 
-    if (!spreadsheetIdFromEnv || !rangeFromEnv) {
+    if (
+      !spreadsheetIdFromEnv ||
+      !spreadsheetReportMetricsRangeFromEnv ||
+      !spreadsheetReportBreakdownRangeFromEnv
+    ) {
       throw new Error(
-        'Missing required environment variables: GOOGLE_SPREADSHEET_ID or GOOGLE_SPREADSHEET_RANGE',
+        'Missing required environment variables: GOOGLE_SPREADSHEET_ID ,GOOGLE_SPREADSHEET_REPORT_METRICS_RANGE, GOOGLE_SPREADSHEET_REPORT_BREAKDOWN_RANGE',
       );
     }
 
     this.spreadsheetId = spreadsheetIdFromEnv;
-    this.range = rangeFromEnv;
+    this.spreadsheetReportMetricsRange = spreadsheetReportMetricsRangeFromEnv;
+    this.spreadsheetReportBreakdownRange =
+      spreadsheetReportBreakdownRangeFromEnv;
   }
 
   // GET /reports
   @Get()
-  async getAll() {
-    return await this.reportService.getAllSaaSMetrics(
-      this.spreadsheetId,
-      this.range,
-    );
+  async getAllReport() {
+    return await this.reportService.getAllReport();
   }
 
-  // Post /reports/sync
-  @Post('sync')
+  // GET /reports/metrics
+  @Get('metrics')
+  async getMetrics() {
+    return await this.reportService.getMetrics();
+  }
+
+  // GET /reports/breakdown
+  @Get('breakdown')
+  async getBreakdown() {
+    return await this.reportService.getBreakdown();
+  }
+
+  // Post /reports/metrics/sync
+  @Post('metrics/sync')
   @HttpCode(HttpStatus.OK)
-  async sync() {
-    const data = await this.reportService.syncSaaSMetricsFromSheet(
+  async syncMetrics() {
+    const result = await this.reportService.syncReportMetricsFromGoogleSheet(
       this.spreadsheetId,
-      this.range,
+      this.spreadsheetReportMetricsRange,
     );
-    return data;
+
+    return {
+      success: true,
+      message: 'Report Metrics Sync started',
+      result: result,
+    };
   }
 
+  // Post /reports/breakdown/sync
+  @Post('breakdown/sync')
+  @HttpCode(HttpStatus.OK)
+  async syncBreakdown() {
+    const result = await this.reportService.syncReportBreakdownFromGoogleSheet(
+      this.spreadsheetId,
+      this.spreadsheetReportBreakdownRange,
+    );
+
+    return {
+      success: true,
+      message: 'Report Breakdown Sync started',
+      result: result,
+    };
+  }
+
+  // Post /reports/webhook
   @Post('webhook')
   @HttpCode(HttpStatus.OK)
   async handleWebhook(@Body() payload: any) {
-    await this.reportService.syncSaaSMetricsFromSheet(
+    await this.reportService.syncReportMetricsFromGoogleSheet(
       this.spreadsheetId,
-      this.range,
+      this.spreadsheetReportMetricsRange,
     );
+
+    await this.reportService.syncReportBreakdownFromGoogleSheet(
+      this.spreadsheetId,
+      this.spreadsheetReportBreakdownRange,
+    );
+
+    this.gateway.broadcastReportUpdate(await this.getAllReport());
+
     return {
       success: true,
       message: 'Data synced and UI notified',

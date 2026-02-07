@@ -1,8 +1,17 @@
 ### Fetching all data
 GET http://localhost:3000/reports
 
-### Sync data from Spreatheets
-POST http://localhost:3000/reports/sync
+### Fetching report metrics
+GET http://localhost:3000/reports/metrics
+
+### Sync data from Spreatheets metrics
+POST http://localhost:3000/reports/metrics/sync
+
+### Fetching report breakdown
+GET http://localhost:3000/reports/breakdown
+
+### Sync data from Spreatheets breakdown
+POST http://localhost:3000/reports/breakdown/sync
 
 ### Simulate Webhook
 POST http://localhost:3000/reports/webhook

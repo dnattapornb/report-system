@@ -1,6 +1,4 @@
-export type MonthlyReport = Record<string, number>;
-
-export interface SaaSMetricItem {
+export interface ReportMetricItem {
   year: string;
   month: string;
   mrr: number;
@@ -30,4 +28,28 @@ export interface SaaSMetricItem {
   hotelgruHotelCount: number;
 }
 
-export type SaaSMetricsData = Record<string, Record<string, SaaSMetricItem>>;
+/**
+ * @example
+ * {
+ *   "2024": {
+ *     "01": { mrr: 1000, nrrPercent: 105, ... },
+ *     "02": { mrr: 1200, nrrPercent: 106, ... }
+ *   }
+ * }
+ */
+export type ReportMetricsData = Record<string, Record<string, ReportMetricItem>>;
+
+export type DistributionItem = Record<string, number>;
+
+export interface ReportBreakdownData {
+  packageDistribution: DistributionItem;
+  paymentConditionDistribution: DistributionItem;
+  revenueModelDistribution: DistributionItem;
+  salesChannelDistribution: DistributionItem;
+  closedDealDistribution: DistributionItem;
+}
+
+export interface DashboardData {
+  metrics?: ReportMetricsData;
+  breakdown?: ReportBreakdownData;
+}

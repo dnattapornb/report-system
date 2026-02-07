@@ -1,10 +1,10 @@
-import { SaaSMetricItem } from './entities/report.entity';
+import { ReportBreakdownData, ReportMetricItem } from './entities/report.entity';
 
 export class ReportDomain {
   static transformRawToSaaSMetrics(
     rows: any[][],
     cutoffDate: string | null,
-  ): SaaSMetricItem[] {
+  ): ReportMetricItem[] {
     if (!rows || rows.length < 2) return [];
 
     const headers = rows[0].map((h) => String(h).trim());
@@ -53,7 +53,6 @@ export class ReportDomain {
       hotelgruHotelCount: headers.indexOf('No. of Hotel (All Product)'),
     };
 
-    // Helper function for safe parsing
     const parseFloatOrZero = (val: any) =>
       parseFloat(String(val).replace(/,/g, '')) || 0;
     const parseIntOrZero = (val: any) =>
@@ -136,6 +135,29 @@ export class ReportDomain {
           ),
         };
       })
-      .filter(Boolean) as SaaSMetricItem[];
+      .filter(Boolean) as ReportMetricItem[];
+  }
+
+  static transformRawToBreakdown(rows: any[][]): ReportBreakdownData {
+    const processColumns = (nameCol: number, valueCol: number) => {
+      const distribution: Record<string, number> = {};
+      for (const row of rows) {
+        const name = row[nameCol]?.trim();
+        const value = row[valueCol];
+        if (name && name.toLowerCase() !== 'total') {
+          distribution[name] =
+            parseInt(String(value).replace(/,/g, ''), 10) || 0;
+        }
+      }
+      return distribution;
+    };
+
+    return {
+      packageDistribution: processColumns(0, 1), // A, B
+      paymentConditionDistribution: processColumns(3, 4), // D, E
+      revenueModelDistribution: processColumns(6, 7), // G, H
+      salesChannelDistribution: processColumns(9, 10), // J, K
+      closedDealDistribution: processColumns(12, 13), // M, N
+    };
   }
 }

@@ -1,5 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common';
-import Redis, { Pipeline } from 'ioredis';
+import Redis from 'ioredis';
 import { REDIS_CLIENT } from './redis.provider';
 
 @Injectable()
@@ -26,8 +26,8 @@ export class RedisService {
     return await this.redis.smembers(key);
   }
 
-  async hset(key: string, field: string, value: string): Promise<void> {
-    await this.redis.hset(key, field, value);
+  async hset(key: string, ...args: (string | number)[]): Promise<void> {
+    await this.redis.hset(key, ...args);
   }
 
   async hgetall(key: string): Promise<Record<string, string>> {
@@ -38,7 +38,11 @@ export class RedisService {
     return await this.redis.hmget(key, ...fields);
   }
 
-  pipeline(): Pipeline {
-    return <Pipeline>this.redis.pipeline();
+  async hmset(key: string, data: Record<string, string>): Promise<void> {
+    await this.redis.hmset(key, data);
+  }
+
+  pipeline() {
+    return this.redis.pipeline();
   }
 }
