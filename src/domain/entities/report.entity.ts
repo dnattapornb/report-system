@@ -42,6 +42,8 @@ export type ReportMetricsData = Record<string, Record<string, ReportMetricItem>>
 export type DistributionItem = Record<string, number>;
 
 export interface ReportBreakdownData {
+  thailandProvinceDistribution: DistributionItem;
+  internationalCountryDistribution: DistributionItem;
   packageDistribution: DistributionItem;
   paymentConditionDistribution: DistributionItem;
   revenueModelDistribution: DistributionItem;

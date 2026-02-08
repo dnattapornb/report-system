@@ -153,11 +153,13 @@ export class ReportDomain {
     };
 
     return {
-      packageDistribution: processColumns(0, 1), // A, B
-      paymentConditionDistribution: processColumns(3, 4), // D, E
-      revenueModelDistribution: processColumns(6, 7), // G, H
-      salesChannelDistribution: processColumns(9, 10), // J, K
-      closedDealDistribution: processColumns(12, 13), // M, N
+      thailandProvinceDistribution: processColumns(0, 1), // A, B
+      internationalCountryDistribution: processColumns(3, 4), // D, E
+      packageDistribution: processColumns(6, 7), // G, H
+      paymentConditionDistribution: processColumns(9, 10), // J, K
+      revenueModelDistribution: processColumns(12, 13), // M, N
+      salesChannelDistribution: processColumns(15, 16), // P, Q
+      closedDealDistribution: processColumns(18, 19), // S, T
     };
   }
 }
