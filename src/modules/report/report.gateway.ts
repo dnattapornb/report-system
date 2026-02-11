@@ -76,9 +76,11 @@ export class ReportGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   broadcastReportUpdate(data: any) {
-    this.logger.log(
-      'Broadcast! Real-time signal report updated via WebSocket',
-    );
+    this.logger.log('Broadcast! Real-time signal report updated via WebSocket');
     this.server.emit('update:saas-metrics', data);
+  }
+
+  broadcastSheetUpdate(payload: any) {
+    this.server.emit('notification:sheet-update', payload);
   }
 }

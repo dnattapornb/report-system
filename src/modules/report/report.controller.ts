@@ -5,12 +5,16 @@ import {
   Body,
   HttpCode,
   HttpStatus,
+  Logger,
+  UseGuards,
 } from '@nestjs/common';
 import { ReportService } from './report.service';
 import { ReportGateway } from './report.gateway';
+import { ApiKeyGuard } from '../../common/guards/api-key.guard';
 
 @Controller('reports')
 export class ReportController {
+  private readonly logger = new Logger(ReportController.name);
   private readonly spreadsheetId: string;
   private readonly spreadsheetReportMetricsRange: string;
   private readonly spreadsheetReportBreakdownRange: string;
@@ -94,7 +98,11 @@ export class ReportController {
   // Post /reports/webhook
   @Post('webhook')
   @HttpCode(HttpStatus.OK)
+  @UseGuards(ApiKeyGuard)
   async handleWebhook(@Body() payload: any) {
+    this.logger.log('Received Webhook: ', payload);
+    this.gateway.broadcastSheetUpdate(payload);
+
     await this.reportService.syncReportMetricsFromGoogleSheet(
       this.spreadsheetId,
       this.spreadsheetReportMetricsRange,
