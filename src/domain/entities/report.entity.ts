@@ -25,7 +25,8 @@ export interface ReportMetricItem {
   cmpayActiveUserCount: number;
   hotelgruCommissionTarget: number;
   hotelgruCommissionActual: number;
-  hotelgruHotelCount: number;
+  hotelgruHotelTarget: number;
+  hotelgruHotelActual: number;
 }
 
 /**

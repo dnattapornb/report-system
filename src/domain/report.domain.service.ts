@@ -1,4 +1,7 @@
-import { ReportBreakdownData, ReportMetricItem } from './entities/report.entity';
+import {
+  ReportBreakdownData,
+  ReportMetricItem,
+} from './entities/report.entity';
 
 export class ReportDomain {
   static transformRawToSaaSMetrics(
@@ -12,45 +15,32 @@ export class ReportDomain {
 
     const columnIndexMap = {
       month: headers.indexOf('Month'),
-      mrr: headers.indexOf('Monthly Recurring Revenue (MRR)'),
-      expansionAmount: headers.indexOf('Expansion (Upgrade)'),
-      churnAmount: headers.indexOf('Chrun Rate Amount'),
-      contractionAmount: headers.indexOf('Contractions (Downgrade)'),
-      nrrPercent: headers.indexOf('NRR%'),
-      grrPercent: headers.indexOf('GRR %'),
-      churnRatePercent: headers.indexOf('Churn rate %'),
-      clientNewOrganicCount: headers.indexOf(
-        'New Organic Sales Clients Acquired  / Month',
-      ),
-      clientNewPartnerCount: headers.indexOf(
-        'New No. of Hotel by Business Partner Clients Acquired  / Month',
-      ),
-      clientChurnCount: headers.indexOf(
-        'Total Hotel by Organic Sales and Business Partner Drop Out / Month',
-      ),
-      clientFreeTrialCount: headers.indexOf('Live Free trial'),
-      clientPendingSetupCount: headers.indexOf(
-        'Pending Setup (waiting for online)',
-      ),
-      hotelTarget: headers.indexOf('Set All Target'),
-      hotelActual: headers.indexOf(
-        'Total Hotel by Organic Sales and Business Partner',
-      ),
-      salesRepCount: headers.indexOf('No. of Sales Rep'),
-      revenueTarget: headers.indexOf('Total Target Revenue'),
-      revenueActual: headers.indexOf('Total Revenue'),
-      cmpayChargeTarget: headers.indexOf('Forecast Target Total Charge'),
-      cmpayChargeActual: headers.indexOf('Total Charge'),
-      cmpayProfitTarget: headers.indexOf('Target Profit'),
-      cmpayProfitActual: headers.indexOf('Profits'),
-      cmpayActiveUserCount: headers.indexOf('CM Pay Active User'),
-      hotelgruCommissionTarget: headers.indexOf(
-        'Total commission Forecast  IBE+HotelGru',
-      ),
-      hotelgruCommissionActual: headers.indexOf(
-        'Total Actual commission IBE+HotelGru per month',
-      ),
-      hotelgruHotelCount: headers.indexOf('No. of Hotel (All Product)'),
+      mrr: headers.indexOf('mrr'),
+      expansionAmount: headers.indexOf('expansionAmount'),
+      churnAmount: headers.indexOf('churnAmount'),
+      contractionAmount: headers.indexOf('contractionAmount'),
+      nrrPercent: headers.indexOf('nrrPercent'),
+      grrPercent: headers.indexOf('grrPercent'),
+      churnRatePercent: headers.indexOf('churnRatePercent'),
+      clientNewOrganicCount: headers.indexOf('clientNewOrganicCount'),
+      clientNewPartnerCount: headers.indexOf('clientNewPartnerCount'),
+      clientChurnCount: headers.indexOf('clientChurnCount'),
+      clientFreeTrialCount: headers.indexOf('clientFreeTrialCount'),
+      clientPendingSetupCount: headers.indexOf('clientPendingSetupCount'),
+      hotelTarget: headers.indexOf('hotelTarget'),
+      hotelActual: headers.indexOf('hotelActual'),
+      salesRepCount: headers.indexOf('salesRepCount'),
+      revenueTarget: headers.indexOf('revenueTarget'),
+      revenueActual: headers.indexOf('revenueActual'),
+      cmpayChargeTarget: headers.indexOf('cmpayChargeTarget'),
+      cmpayChargeActual: headers.indexOf('cmpayChargeActual'),
+      cmpayProfitTarget: headers.indexOf('cmpayProfitTarget'),
+      cmpayProfitActual: headers.indexOf('cmpayProfitActual'),
+      cmpayActiveUserCount: headers.indexOf('cmpayActiveUsers'),
+      hotelgruCommissionTarget: headers.indexOf('hotelgruCommissionTarget'),
+      hotelgruCommissionActual: headers.indexOf('hotelgruCommissionActual'),
+      hotelgruHotelTarget: headers.indexOf('hotelgruHotelTarget'),
+      hotelgruHotelActual: headers.indexOf('hotelgruHotelActual'),
     };
 
     const parseFloatOrZero = (val: any) =>
@@ -130,8 +120,11 @@ export class ReportDomain {
           hotelgruCommissionActual: parseFloatOrZero(
             row[columnIndexMap.hotelgruCommissionActual],
           ),
-          hotelgruHotelCount: parseFloatOrZero(
-            row[columnIndexMap.hotelgruHotelCount],
+          hotelgruHotelTarget: parseFloatOrZero(
+            row[columnIndexMap.hotelgruHotelTarget],
+          ),
+          hotelgruHotelActual: parseFloatOrZero(
+            row[columnIndexMap.hotelgruHotelActual],
           ),
         };
       })
