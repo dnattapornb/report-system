@@ -41,6 +41,11 @@ export class ReportDomain {
       hotelgruCommissionActual: headers.indexOf('hotelgruCommissionActual'),
       hotelgruHotelTarget: headers.indexOf('hotelgruHotelTarget'),
       hotelgruHotelActual: headers.indexOf('hotelgruHotelActual'),
+      hotelgruHotelChurnCount: headers.indexOf('hotelgruHotelChurnCount'),
+      partnerHotelTarget: headers.indexOf('partnerHotelTarget'),
+      partnerHotelActual: headers.indexOf('partnerHotelActual'),
+      partnerRevenueTarget: headers.indexOf('partnerRevenueTarget'),
+      partnerRevenueActual: headers.indexOf('partnerRevenueActual'),
     };
 
     const parseFloatOrZero = (val: any) =>
@@ -125,6 +130,21 @@ export class ReportDomain {
           ),
           hotelgruHotelActual: parseFloatOrZero(
             row[columnIndexMap.hotelgruHotelActual],
+          ),
+          hotelgruHotelChurnCount: parseIntOrZero(
+            row[columnIndexMap.hotelgruHotelChurnCount],
+          ),
+          partnerHotelTarget: parseIntOrZero(
+            row[columnIndexMap.partnerHotelTarget],
+          ),
+          partnerHotelActual: parseIntOrZero(
+            row[columnIndexMap.partnerHotelActual],
+          ),
+          partnerRevenueTarget: parseFloatOrZero(
+            row[columnIndexMap.partnerRevenueTarget],
+          ),
+          partnerRevenueActual: parseFloatOrZero(
+            row[columnIndexMap.partnerRevenueActual],
           ),
         };
       })

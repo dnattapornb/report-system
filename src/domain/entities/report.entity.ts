@@ -27,6 +27,11 @@ export interface ReportMetricItem {
   hotelgruCommissionActual: number;
   hotelgruHotelTarget: number;
   hotelgruHotelActual: number;
+  hotelgruHotelChurnCount: number;
+  partnerHotelTarget: number;
+  partnerHotelActual: number;
+  partnerRevenueTarget: number;
+  partnerRevenueActual: number;
 }
 
 /**
