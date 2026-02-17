@@ -18,5 +18,8 @@ POST http://localhost:3000/reports/webhook
 Content-Type: application/json
 
 {
-  "event": "sheet_updated"
+  "event": "manual_full_sync",
+  "timestamp": "1234567890",
+  "spreadsheetId": "197b2097-d8a9-4deb-b4ed-e8a81b9ac2f1",
+  "triggeredBy": "ABOY"
 }

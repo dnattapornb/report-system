@@ -36,7 +36,8 @@ export class ReportDomain {
       cmpayChargeActual: headers.indexOf('cmpayChargeActual'),
       cmpayProfitTarget: headers.indexOf('cmpayProfitTarget'),
       cmpayProfitActual: headers.indexOf('cmpayProfitActual'),
-      cmpayActiveUserCount: headers.indexOf('cmpayActiveUsers'),
+      cmpayAllUserCount: headers.indexOf('cmpayAllUserCount'),
+      cmpayActiveUserCount: headers.indexOf('cmpayActiveUserCount'),
       hotelgruCommissionTarget: headers.indexOf('hotelgruCommissionTarget'),
       hotelgruCommissionActual: headers.indexOf('hotelgruCommissionActual'),
       hotelgruHotelTarget: headers.indexOf('hotelgruHotelTarget'),
@@ -115,6 +116,9 @@ export class ReportDomain {
           ),
           cmpayProfitActual: parseFloatOrZero(
             row[columnIndexMap.cmpayProfitActual],
+          ),
+          cmpayAllUserCount: parseFloatOrZero(
+            row[columnIndexMap.cmpayAllUserCount],
           ),
           cmpayActiveUserCount: parseFloatOrZero(
             row[columnIndexMap.cmpayActiveUserCount],
