@@ -101,6 +101,32 @@ export class ReportController {
   @UseGuards(ApiKeyGuard)
   async handleWebhook(@Body() payload: any) {
     this.logger.log('Received Webhook: ', payload);
+    const allowedSheets = [
+      'Customer Churn Rate',
+      'Annual Forecast',
+      'HTGPreview',
+      'CMPay Preview',
+      'Projection Partner',
+      'Hotel Customer Listing',
+      'Event Media Marketing Plan',
+      'RAW-DATA-REPORT',
+      'REPORT-METRICS',
+      'REPORT-BREAKDOWN',
+      'REPORT',
+    ];
+
+    if (!payload.sheetName || !allowedSheets.includes(payload.sheetName)) {
+      this.logger.warn(
+        `🚫 Ignored webhook from unrelated sheet: ${payload.sheetName}`,
+      );
+
+      // Return success: true เพื่อให้ Google Script ไม่มองว่าเป็น Error
+      return {
+        success: true,
+        message: `Ignored update from sheet: ${payload.sheetName}`,
+      };
+    }
+
     this.gateway.broadcastSheetUpdate(payload);
 
     await this.reportService.syncReportMetricsFromGoogleSheet(
