@@ -7,6 +7,7 @@ import {
   HttpStatus,
   Logger,
   UseGuards,
+  BadRequestException,
 } from '@nestjs/common';
 import { ReportService } from './report.service';
 import { ReportGateway } from './report.gateway';
@@ -18,6 +19,19 @@ export class ReportController {
   private readonly spreadsheetId: string;
   private readonly spreadsheetReportMetricsRange: string;
   private readonly spreadsheetReportBreakdownRange: string;
+  private readonly allowedSheets = [
+    'Customer Churn Rate',
+    'Annual Forecast',
+    'HTGPreview',
+    'CMPay Preview',
+    'Projection Partner',
+    'Hotel Customer Listing',
+    'Event Media Marketing Plan',
+    'RAW-DATA-REPORT',
+    'REPORT-METRICS',
+    'REPORT-BREAKDOWN',
+    'REPORT',
+  ];
 
   constructor(
     private readonly reportService: ReportService,
@@ -100,31 +114,36 @@ export class ReportController {
   @HttpCode(HttpStatus.OK)
   @UseGuards(ApiKeyGuard)
   async handleWebhook(@Body() payload: any) {
-    this.logger.log('Received Webhook: ', payload);
-    const allowedSheets = [
-      'Customer Churn Rate',
-      'Annual Forecast',
-      'HTGPreview',
-      'CMPay Preview',
-      'Projection Partner',
-      'Hotel Customer Listing',
-      'Event Media Marketing Plan',
-      'RAW-DATA-REPORT',
-      'REPORT-METRICS',
-      'REPORT-BREAKDOWN',
-      'REPORT',
-    ];
+    // this.logger.log('Received Webhook Payload:', payload);
 
-    if (!payload.sheetName || !allowedSheets.includes(payload.sheetName)) {
-      this.logger.warn(
-        `🚫 Ignored webhook from unrelated sheet: ${payload.sheetName}`,
+    if (!payload.event) {
+      throw new BadRequestException(
+        'Invalid payload: "event" field is required',
       );
+    }
 
-      // Return success: true เพื่อให้ Google Script ไม่มองว่าเป็น Error
-      return {
-        success: true,
-        message: `Ignored update from sheet: ${payload.sheetName}`,
-      };
+    if (payload.event === 'manual_full_sync') {
+      this.logger.log('🔄 Processing Manual Full Sync...');
+    } else {
+      const sheetName = payload.sheetName;
+
+      if (!sheetName) {
+        throw new BadRequestException(
+          `Invalid payload: "sheetName" is required for event "${payload.event}"`,
+        );
+      }
+
+      if (!this.allowedSheets.includes(sheetName)) {
+        this.logger.warn(`🚫 Ignored event from unrelated sheet: ${sheetName}`);
+        return {
+          success: true, // ต้อง return true เพื่อให้ Google Script ไม่ error
+          message: `Ignored update from sheet: ${sheetName}`,
+        };
+      }
+
+      this.logger.log(
+        `✅ Processing event "${payload.event}" from sheet "${sheetName}"`,
+      );
     }
 
     this.gateway.broadcastSheetUpdate(payload);
